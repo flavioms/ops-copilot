@@ -1,0 +1,13 @@
+# Project hooks. Command names map to skills (/ops-copilot-changes, /ops-copilot-guard).
+hooks:
+  after_implement:
+    - extension: ops-copilot
+      command: ops-copilot-changes
+      enabled: true
+      optional: false
+      description: Record changes to critical files in the feature's changes.md
+    - extension: ops-copilot
+      command: ops-copilot-guard
+      enabled: true
+      optional: false
+      description: Check file size, inline types, duplication and changes.md coverage

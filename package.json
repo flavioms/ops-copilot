@@ -6,7 +6,8 @@
     "arena": "tsx src/arena.ts",
     "bench": "tsx src/bench.ts",
     "test": "node --import tsx --test \"src/**/*test.ts\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "guard": "tsx scripts/ops-copilot-guard.ts"
   },
   "type": "module",
   "dependencies": {

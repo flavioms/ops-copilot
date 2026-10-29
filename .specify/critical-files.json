@@ -1,0 +1,4 @@
+{
+  "$comment": "Globs of files that hold core business rules. Changes require an entry in specs/NNN-feature/changes.md (Constitution X). Add globs as the codebase grows.",
+  "globs": []
+}
