@@ -13,7 +13,7 @@ All Technical Context unknowns are resolved; none remain marked NEEDS CLARIFICAT
 - **Alternatives**: `createAgent` from `langchain` — adds a dependency; revisit if `createReactAgent` is removed.
 
 ## R3. Iteration limit
-- **Decision**: ReAct: pass `recursionLimit = 2 × maxIterations + 1` (each iteration is one model step plus one tool step). On `GraphRecursionError`, stop, append a trace note and return a partial answer. Plan-and-Execute: executed steps ≤ `min(8, maxIterations)`; each executor sub-run gets the same recursion mapping.
+- **Decision**: ReAct: pass `recursionLimit = 2 × maxIterations` (each iteration is one model step plus one tool step; verified empirically that a run finishing exactly on the last allowed iteration is not flagged). On `GraphRecursionError`, stop, append a trace note and return a partial answer. Plan-and-Execute: `maxIterations` is a single total budget of executor iterations shared by all steps (each sub-run is limited to the remaining budget); steps ≤ 8.
 - **Rationale**: Uses a built-in guard; the cap is enforced in code, not by prompting.
 - **Alternatives**: Custom counter in each node — duplicated logic.
 

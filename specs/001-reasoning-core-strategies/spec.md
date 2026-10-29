@@ -178,7 +178,7 @@ it, and attempt invalid calls; verify state changes and error messages without a
 
 - **SC-001**: For a request about firing alerts on the seeded data, an engineer receives a
   correct answer listing all 3 firing alerts and none of the resolved ones.
-- **SC-002**: 100% of runs return an answer, a non-empty trace ending in an answer event, and
+- **SC-002**: 100% of runs that reach the model return an answer, a non-empty trace ending in an answer event, and
   metrics, including runs that hit the iteration limit or encounter tool errors.
 - **SC-003**: No run exceeds the configured iteration limit, and no plan executes more than 8
   steps, in any test scenario.

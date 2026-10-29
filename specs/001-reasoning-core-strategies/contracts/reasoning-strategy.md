@@ -16,4 +16,8 @@ Guarantees (tested):
 - `metrics.llmCalls` equals actual model invocations, including sub-runs; `latencyMs` is wall time.
 - Model/setup failures (missing env, unreachable service) reject with an `Error` whose message
   names the cause; partial trace/metrics are attached to the error as `partial`.
-- Plan-and-Execute never executes more than `min(8, maxIterations)` steps.
+- An iteration is one model call plus the tool step that follows it. ReAct stops after at most
+  `maxIterations` model calls.
+- Plan-and-Execute treats `maxIterations` as ONE total budget for executor iterations across all
+  steps (planner and replanner calls are counted in `llmCalls` but not as iterations), and never
+  executes more than 8 steps.

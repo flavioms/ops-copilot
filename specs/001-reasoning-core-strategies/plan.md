@@ -146,6 +146,10 @@ src/
 │   ├── strategy.types.ts         # ReasoningStrategy, RunOptions
 │   ├── model.schema.ts           # env schema for the model
 │   ├── model.ts                  # createModel(): ChatOpenAI → OpenRouter, temperature 0
+│   ├── prompts.ts                # system/planner/executor/replanner prompts
+│   ├── strategy.errors.ts        # StrategyError (partial trace + metrics)
+│   ├── iteration-limit.ts        # recursionLimitFor(maxIterations)
+│   ├── fake-model.helper.ts      # scripted chat model for offline tests
 │   ├── llm-call-counter.ts       # callback handler counting LLM calls
 │   ├── trace-capture.ts          # LangChain messages/events → TraceEvent[]
 │   ├── trace-format.ts           # pure formatTrace(trace): string
@@ -157,6 +161,7 @@ src/
 ├── store/
 │   ├── store.schema.ts           # Service, Alert, Incident (zod + inferred)
 │   ├── store.types.ts            # AlertStore interface
+│   ├── store.errors.ts           # UnknownService, UnknownIncident, AlreadyResolved
 │   ├── memory-store.ts
 │   ├── sequelize-models.ts       # model definitions only
 │   ├── sequelize-store.ts        # AlertStore over Sequelize
@@ -164,6 +169,7 @@ src/
 │   └── store.contract.ts         # shared contract test suite
 ├── db.schema.ts                  # DATABASE_URL schema
 ├── arena.schema.ts               # CLI flags schema
+├── arena.types.ts                # ArenaDeps
 └── arena.ts                      # CLI entry (npm run arena)
 
 scripts/

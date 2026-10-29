@@ -43,13 +43,13 @@ State transitions: `open → resolved` only; resolving a resolved incident retur
 "already resolved" error without changes.
 
 ## AlertStore (contract)
-`listAlerts(status?)`, `findService(nameOrId)`, `openIncident({title, service, severity})`,
+`listServices()`, `listAlerts(status?)`, `findService(nameOrId)`, `openIncident({title, service, severity})`,
 `resolveIncident(id)`, `listIncidents()`. All return validated entities or typed errors
 (`UnknownService`, `UnknownIncident`, `AlreadyResolved`).
 
 ## Reasoning types
 - **TraceEvent** (discriminated on `type`): `thought {text}` · `action {tool, args}` ·
   `observation {tool, content}` · `plan {steps: string[]}` · `critique {text}` · `answer {text}`;
-  all carry `at` (ISO timestamp). Limit notices are `critique` events.
+  no timestamps (keeps traces deterministic). Limit notices are `critique` events.
 - **Metrics**: `{ llmCalls: number, latencyMs: number }`.
 - **RunResult**: `{ answer: string, trace: TraceEvent[], metrics: Metrics }`.
