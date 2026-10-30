@@ -1,6 +1,6 @@
 # Contract: arena CLI
 
-`npm run arena -- [flags] "<request>"` (run with `--env-file=.env`, see quickstart)
+`npm run arena -- [flags] "<request>"` (the script loads `.env` via `--env-file-if-exists`)
 
 | Flag | Default | Rules |
 |------|---------|-------|

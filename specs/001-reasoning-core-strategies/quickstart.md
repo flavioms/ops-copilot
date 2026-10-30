@@ -21,13 +21,13 @@ Expected: 5 services, 6 alerts (3 firing, 3 resolved). The arena reads and exten
 
 ## 2b. PostgreSQL (optional)
 ```bash
-node --env-file=.env --import tsx scripts/seed.ts   # or: npm run seed
+npm run seed
 ```
 Expected: 5 services, 6 alerts (3 firing, 3 resolved); running twice gives the same counts.
 
 ## 3. Compare strategies
 ```bash
-node --env-file=.env --import tsx src/arena.ts \
+npm run arena -- \
   --strategies react,plan-and-execute --max-iterations 8 \
   "List the firing alerts and open an incident for the most severe one"
 ```

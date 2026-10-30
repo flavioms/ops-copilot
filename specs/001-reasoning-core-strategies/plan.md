@@ -73,7 +73,7 @@ libraries/prebuilt pieces, and design shared pieces once.*
 | Structured plan output | `withStructuredOutput(zod)` on `ChatOpenAI` | Reuse | Native structured output + zod |
 | Iteration limit | `recursionLimit` in `RunnableConfig` + `GraphRecursionError` | Reuse | Built-in, no custom counter |
 | CLI flag parsing | `node:util` `parseArgs` | Reuse | Stdlib; no new dependency |
-| Env loading | Node `--env-file` | Reuse | Constitution (no dotenv) |
+| Env loading | Node `--env-file-if-exists=.env` in the npm scripts | Reuse | Constitution (no dotenv) |
 | Env/flag/tool validation | `zod` | Reuse | Constitution III |
 | Persistence | `sequelize` + `pg` | New dependency | Requested (PostgreSQL via Sequelize) |
 | `AlertStore` contract, memory + Sequelize impls | none | New | Required by FR-014/015 |

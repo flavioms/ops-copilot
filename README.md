@@ -105,7 +105,8 @@ redaction, an HTTP API (Express is installed but unused), and any action on real
 
 Node.js 24 (ESM), TypeScript (strict), `tsx`, `zod`, `@langchain/core`, `@langchain/openai`,
 `@langchain/langgraph`, `express`. Planned for `001`: `sequelize` + `pg`. Environment variables are
-loaded with Node's native `--env-file` (no `dotenv`).
+loaded with Node's native `--env-file-if-exists=.env`, already wired into the `dev`, `arena`, `bench`
+and `seed` scripts (no `dotenv`).
 
 ## Getting started
 
@@ -117,7 +118,7 @@ cp .env.example .env   # set OPENROUTER_API_KEY and OPENROUTER_MODEL (a tool-cal
 | Script | What it does |
 |--------|--------------|
 | `npm run dev` | `tsx src/index.ts` |
-| `npm run arena` | `tsx src/arena.ts`: compare strategies (use `node --env-file=.env --import tsx src/arena.ts` to load `.env`) |
+| `npm run arena` | `tsx src/arena.ts`: compare strategies (loads `.env`) |
 | `npm run seed` | Rebuilds `data/db.json` from `data/seed.json` |
 | `npm run bench` | `tsx src/bench.ts` |
 | `npm test` | `node --import tsx --test "src/**/*test.ts"` |
