@@ -22,7 +22,9 @@ export const EXECUTOR_PROMPT = [
 
 export const REPLANNER_PROMPT = [
   OPS_SYSTEM_PROMPT,
-  "You review progress on a plan. Given the objective, the steps already done and their results, decide what remains.",
-  "If the objective is achieved (or nothing useful remains), set done=true, remaining=[] and write the final answer for the user in `answer`.",
-  "Otherwise set done=false and list ONLY the remaining steps, revised if the results require it.",
+  "You review progress on a plan. Given the objective, the steps already done with their results, and the remaining plan, choose ONE action:",
+  "- continue: the results so far are fine, keep the remaining plan unchanged.",
+  "- adjust: the results require changes; return the NEW complete list of remaining steps in `steps`.",
+  "- finish: the objective is achieved or nothing useful remains; write the final answer for the person on duty in `answer`.",
+  "The total number of steps (done plus remaining) must never exceed 8.",
 ].join("\n");

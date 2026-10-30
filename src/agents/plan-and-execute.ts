@@ -73,16 +73,27 @@ export function createPlanAndExecuteStrategy({ model, store }: StrategyDeps): Re
       };
 
       const replanner = async (state: PlanStateType) => {
-        const prompt = `Objective: ${state.input}\nSteps done:\n${history(state)}\nRemaining plan: ${JSON.stringify(state.plan)}`;
+        const prompt = `Objective: ${state.input}\nSteps done (${state.past.length} of at most ${MAX_PLAN_STEPS}):\n${history(state)}\nRemaining plan: ${JSON.stringify(state.plan)}`;
         const replan = await model
           .withStructuredOutput(Replan)
           .invoke([["system", REPLANNER_PROMPT], ["human", prompt]], { callbacks });
-        const finished = replan.done || replan.remaining.length === 0;
-        const trace: TraceEvent[] = [{ type: "critique", text: replan.rationale }];
-        if (!finished) trace.push({ type: "plan", steps: replan.remaining });
         const last = state.past.at(-1)?.result ?? "";
+        const trace: TraceEvent[] = [{ type: "critique", text: `[${replan.action}] ${replan.rationale}` }];
+
+        // "adjust" without new steps is treated as "continue"; "continue" with nothing left means done.
+        let remaining = replan.action === "adjust" && replan.steps?.length ? replan.steps : state.plan;
+        if (replan.action === "adjust" && remaining !== state.plan) {
+          const allowed = Math.max(0, MAX_PLAN_STEPS - state.past.length);
+          const kept = remaining.slice(0, allowed);
+          if (kept.length < remaining.length) {
+            trace.push({ type: "critique", text: `Adjusted plan truncated from ${remaining.length} to ${kept.length} steps (total cap of ${MAX_PLAN_STEPS}).` });
+          }
+          remaining = kept;
+          if (remaining.length > 0) trace.push({ type: "plan", steps: remaining });
+        }
+        const finished = replan.action === "finish" || (replan.action !== "adjust" && remaining.length === 0);
         return {
-          plan: finished ? [] : replan.remaining,
+          plan: finished ? [] : remaining,
           trace,
           done: finished,
           answer: finished ? (replan.answer?.trim() || last) : "",
