@@ -8,9 +8,10 @@ import { formatTrace } from "./agents/trace-format.ts";
 import { ArenaArgs, STRATEGY_NAMES } from "./arena.schema.ts";
 import type { ArenaDeps } from "./arena.types.ts";
 import { readDatabaseUrl } from "./db.schema.ts";
+import { JsonFileStore } from "./store/json-file-store.ts";
 import { MemoryStore } from "./store/memory-store.ts";
 import { SequelizeStore } from "./store/sequelize-store.ts";
-import type { AlertStore } from "./store/store.types.ts";
+import { snapshotStore } from "./store/snapshot.ts";
 
 export function parseArenaArgs(argv: string[]): ArenaArgs {
   const { values, positionals } = parseArgs({
@@ -38,7 +39,7 @@ export function parseArenaArgs(argv: string[]): ArenaArgs {
 const metricsLine = (m: Metrics) => `llmCalls=${m.llmCalls} latencyMs=${m.latencyMs}`;
 
 /** Runs the selected strategies on the same request and prints each result. Returns the exit code. */
-export async function runArena(argv: string[], { strategies, write }: ArenaDeps): Promise<number> {
+export async function runArena(argv: string[], { createStrategy, write }: ArenaDeps): Promise<number> {
   let args: ArenaArgs;
   try {
     args = parseArenaArgs(argv);
@@ -50,7 +51,8 @@ export async function runArena(argv: string[], { strategies, write }: ArenaDeps)
   for (const name of args.strategies) {
     write(`=== ${name} ===`);
     try {
-      const result = await strategies[name].run(args.request, { maxIterations: args.maxIterations });
+      const strategy = await createStrategy(name);
+      const result = await strategy.run(args.request, { maxIterations: args.maxIterations });
       write(formatTrace(result.trace));
       write(`Answer: ${result.answer}`);
       write(metricsLine(result.metrics));
@@ -67,15 +69,17 @@ export async function runArena(argv: string[], { strategies, write }: ArenaDeps)
 }
 
 async function main() {
-  const databaseUrl = process.env.DATABASE_URL ? readDatabaseUrl() : undefined;
-  const sequelizeStore = databaseUrl ? new SequelizeStore(databaseUrl) : undefined;
-  const store: AlertStore = sequelizeStore ?? new MemoryStore();
+  // The database is PostgreSQL when DATABASE_URL is set, otherwise the JSON file created by `npm run seed`.
+  const sequelizeStore = process.env.DATABASE_URL ? new SequelizeStore(readDatabaseUrl()) : undefined;
   try {
     const model = createModel();
+    // Every strategy starts from the same snapshot of the database, in its own in-memory copy:
+    // they cannot see each other's incidents and the database itself is left untouched.
+    const snapshot = await snapshotStore(sequelizeStore ?? JsonFileStore.open());
     const code = await runArena(process.argv.slice(2), {
-      strategies: {
-        react: createReactStrategy({ model, store }),
-        "plan-and-execute": createPlanAndExecuteStrategy({ model, store }),
+      createStrategy: async (name) => {
+        const store = new MemoryStore(snapshot);
+        return name === "react" ? createReactStrategy({ model, store }) : createPlanAndExecuteStrategy({ model, store });
       },
       write: (text) => console.log(text),
     });

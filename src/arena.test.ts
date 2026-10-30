@@ -53,10 +53,17 @@ describe("parseArenaArgs", () => {
 
 describe("runArena", () => {
   const strategies = { react: fake("react", "R"), "plan-and-execute": fake("plan-and-execute", "P") };
+  const depsFor = (table: typeof strategies, write: (text: string) => void, created: string[] = []) => ({
+    createStrategy: async (name: keyof typeof strategies) => {
+      created.push(name);
+      return table[name];
+    },
+    write,
+  });
 
   it("prints header, trace, answer and metrics per selected strategy", async () => {
     const out = capture();
-    const code = await runArena(["--max-iterations", "3", "q"], { strategies, write: out.write });
+    const code = await runArena(["--max-iterations", "3", "q"], depsFor(strategies, out.write));
     const text = out.lines.join("\n");
     assert.equal(code, 0);
     assert.match(text, /=== react ===/);
@@ -68,13 +75,13 @@ describe("runArena", () => {
 
   it("runs only the selected strategy", async () => {
     const out = capture();
-    await runArena(["--strategies", "react", "q"], { strategies, write: out.write });
+    await runArena(["--strategies", "react", "q"], depsFor(strategies, out.write));
     assert.doesNotMatch(out.lines.join("\n"), /plan-and-execute/);
   });
 
   it("keeps going when one strategy fails and exits 1", async () => {
     const out = capture();
-    const code = await runArena(["q"], { strategies: { ...strategies, "plan-and-execute": failing }, write: out.write });
+    const code = await runArena(["q"], depsFor({ ...strategies, "plan-and-execute": failing }, out.write));
     const text = out.lines.join("\n");
     assert.equal(code, 1);
     assert.match(text, /=== react ===[\s\S]*Answer: R10/);
@@ -82,9 +89,15 @@ describe("runArena", () => {
     assert.match(text, /llmCalls=1 latencyMs=3/);
   });
 
+  it("creates a fresh strategy (and so a fresh store) per selected strategy, in order", async () => {
+    const created: string[] = [];
+    await runArena(["q"], depsFor(strategies, capture().write, created));
+    assert.deepEqual(created, ["react", "plan-and-execute"]);
+  });
+
   it("exits 1 with a message on invalid arguments", async () => {
     const out = capture();
-    assert.equal(await runArena(["--strategies", "foo", "q"], { strategies, write: out.write }), 1);
+    assert.equal(await runArena(["--strategies", "foo", "q"], depsFor(strategies, out.write)), 1);
     assert.match(out.lines.join("\n"), /react, plan-and-execute/);
   });
 });
