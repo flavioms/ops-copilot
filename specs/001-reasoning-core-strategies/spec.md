@@ -16,6 +16,10 @@
   (via Sequelize) instead of Postgres as the persistent default, and provide an in-memory
   implementation behind the same contract for tests and demos. This supersedes the Postgres
   mention in the Input line.
+- Q: Is a database server required for now? → A: No. Until further notice the persistent store is
+  a JSON file (`data/db.json`, created by the seed script from `data/seed.json`) that the copilot
+  reads and adds incidents to; the in-memory store used by tests starts from the same
+  `data/seed.json` and never writes. PostgreSQL stays available, optional (`DATABASE_URL`).
 
 ## User Scenarios & Testing *(mandatory)*
 

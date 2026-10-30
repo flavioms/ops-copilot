@@ -42,6 +42,10 @@ medium), email delivery delay on `notification-service` (resolved, low), disk pr
 State transitions: `open → resolved` only; resolving a resolved incident returns an
 "already resolved" error without changes.
 
+## StoreData (JSON file shape)
+`{ services: Service[], alerts: Alert[], incidents: Incident[] }`, validated by zod. `data/seed.json` has
+incidents `[]`; `data/db.json` is a copy that grows as incidents are opened and resolved.
+
 ## AlertStore (contract)
 `listServices()`, `listAlerts(status?)`, `findService(nameOrId)`, `openIncident({title, service, severity})`,
 `resolveIncident(id)`, `listIncidents()`. All return validated entities or typed errors

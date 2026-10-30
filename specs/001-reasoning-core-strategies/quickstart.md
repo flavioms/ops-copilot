@@ -13,7 +13,13 @@ npm run guard
 ```
 Expected: all green.
 
-## 2. Seed the database (optional, needs PostgreSQL)
+## 2. Seed the database
+```bash
+npm run seed        # rebuilds data/db.json from data/seed.json (and PostgreSQL if DATABASE_URL is set)
+```
+Expected: 5 services, 6 alerts (3 firing, 3 resolved). The arena reads and extends `data/db.json`.
+
+## 2b. PostgreSQL (optional)
 ```bash
 node --env-file=.env --import tsx scripts/seed.ts   # or: npm run seed
 ```

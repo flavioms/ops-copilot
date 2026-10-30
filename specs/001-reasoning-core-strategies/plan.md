@@ -165,15 +165,20 @@ src/
 │   ├── memory-store.ts
 │   ├── sequelize-models.ts       # model definitions only
 │   ├── sequelize-store.ts        # AlertStore over Sequelize
-│   ├── seed-data.ts              # 5 services, 6 alerts (shared by both stores)
+│   ├── seed-data.ts              # readSeed(): validated data/seed.json
+│   ├── json-file-store.ts        # MemoryStore persisted to data/db.json (current default)
 │   └── store.contract.ts         # shared contract test suite
 ├── db.schema.ts                  # DATABASE_URL schema
 ├── arena.schema.ts               # CLI flags schema
 ├── arena.types.ts                # ArenaDeps
 └── arena.ts                      # CLI entry (npm run arena)
 
+data/
+├── seed.json                     # committed seed: 5 services, 6 alerts
+└── db.json                       # runtime database (git-ignored), created by the seed
+
 scripts/
-└── seed.ts                       # npm run seed (idempotent)
+└── seed.ts                       # npm run seed (idempotent; writes data/db.json, PostgreSQL if DATABASE_URL)
 ```
 
 Tests sit next to code as `*.test.ts` (matches `npm test` glob).

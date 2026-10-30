@@ -64,35 +64,39 @@ count every LLM call, including those made inside sub-runs.
 `open_incident(title, service, severity)`, `resolve_incident(id)`. Errors come back as
 observations so the model can recover.
 
-**Store**: one `AlertStore` contract with a PostgreSQL implementation (Sequelize) for the seed and
-the arena, and an in-memory one so tests need no database and no network. The seed has 5 services
-and 6 alerts (3 firing, 3 resolved).
+**Store**: one `AlertStore` contract. For now the database is a JSON file (`data/db.json`, built
+from `data/seed.json` by `npm run seed`) that the copilot reads and adds incidents to. The
+in-memory store used by tests starts from the same seed and never writes, so tests need no
+database and no network. A PostgreSQL implementation (Sequelize) is optional (`DATABASE_URL`).
+The seed has 5 services and 6 alerts (3 firing, 3 resolved).
 
 ### The arena
 
 A small CLI runs one or more strategies on the same request and prints each trace and its metrics
-(design target, not implemented yet):
+:
 
 ```bash
 npm run arena -- --strategies react,plan-and-execute --max-iterations 8 \
   "List the firing alerts and open an incident for the most severe one"
 ```
 
-Per strategy it prints the formatted trace, the answer and a metrics line such as
+Every strategy starts from the same snapshot of the database in its own in-memory copy, so they
+cannot influence each other and `data/db.json` is not modified. Per strategy it prints the
+formatted trace, the answer and a metrics line such as
 `llmCalls=5 latencyMs=4210`.
 
 ## Status
 
-Work in progress. The first feature, `001-reasoning-core-strategies`, covers everything above. It
-has a spec, plan and tasks and has been through an analysis pass, but **has no implementation
-yet**: `src/` holds only a placeholder for the typechecker.
+Work in progress. The first feature, `001-reasoning-core-strategies`, is **implemented**: both
+strategies, the tools, the stores, the seed and the arena run end to end against an OpenRouter
+model (verified with a free tool-calling model), and the test suite passes offline.
 
 | Step | State |
 |------|-------|
 | Constitution (v1.1.0) | Done |
 | `001` spec, plan, tasks | Done |
-| `001` analysis findings applied | Pending |
-| `001` implementation | Not started |
+| `001` analysis findings | Mostly applied |
+| `001` implementation | Done |
 
 Not planned yet: real alert sources (webhooks from a monitoring system), real log ingestion and
 redaction, an HTTP API (Express is installed but unused), and any action on real services.
@@ -113,13 +117,14 @@ cp .env.example .env   # set OPENROUTER_API_KEY and OPENROUTER_MODEL (a tool-cal
 | Script | What it does |
 |--------|--------------|
 | `npm run dev` | `tsx src/index.ts` |
-| `npm run arena` | `tsx src/arena.ts`: compare strategies (planned) |
+| `npm run arena` | `tsx src/arena.ts`: compare strategies (use `node --env-file=.env --import tsx src/arena.ts` to load `.env`) |
+| `npm run seed` | Rebuilds `data/db.json` from `data/seed.json` |
 | `npm run bench` | `tsx src/bench.ts` |
 | `npm test` | `node --import tsx --test "src/**/*test.ts"` |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run guard` | File-size and critical-file `changes.md` checks |
 
-`dev`, `arena` and `bench` point at files that do not exist yet.
+`dev` and `bench` point at files that do not exist yet.
 
 ## Built with Spec-Driven Development
 
@@ -181,6 +186,7 @@ types, and lost context about why a change was made.
 .specify/            Spec Kit: constitution, templates (+ overrides), scripts, hooks
 .claude/skills/      /speckit-* skills and the project's own /ops-copilot-* skills
 specs/               One folder per feature: spec, plan, research, data model, contracts, tasks
-scripts/             Project scripts (guard; seed planned)
-src/                 Application code (empty for now)
+scripts/             Project scripts (guard, seed)
+src/                 Application code (agents, store, arena)
+data/                Seed data (seed.json); db.json is generated and git-ignored
 ```

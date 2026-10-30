@@ -40,6 +40,19 @@ All Technical Context unknowns are resolved; none remain marked NEEDS CLARIFICAT
 - **Decision**: `node:util` `parseArgs` + zod; flags `--strategies react,plan-and-execute` (default: all) and `--max-iterations N` (default 10), plus the request as a positional argument.
 - **Alternatives**: `commander` — new dependency, unnecessary.
 
+## R11. JSON file as the current database
+- **Decision**: `JsonFileStore` extends `MemoryStore` and rewrites `data/db.json` (temp file + rename) after every successful `openIncident`/`resolveIncident`; `MemoryStore` takes initial data (default `data/seed.json`) and never writes, so tests stay hermetic and share the same seeds. `npm run seed` rebuilds `data/db.json`.
+- **Rationale**: no server needed for now; reuses all MemoryStore logic (Constitution IX).
+- **Alternatives**: a second full store implementation — duplicated logic.
+
+## R12. Replanner decisions
+- **Decision**: structured output `{action: continue | adjust | finish, steps?, rationale, answer?}`. `continue` keeps the remaining plan, `adjust` replaces it (truncated so done + remaining ≤ 8), `finish` ends with the answer. `adjust` without steps counts as `continue`.
+
+## R13. Clean store per strategy in the arena
+- **Decision**: the arena snapshots the database once (`snapshotStore`) and gives each strategy a new `MemoryStore` built from that snapshot.
+- **Rationale**: fair comparison (no cross-contamination) and no side effects on `data/db.json`; works for both backends through the `AlertStore` interface.
+- **Alternatives**: reseeding `db.json` before each strategy (destroys existing data); a `--persist` flag (not needed yet).
+
 ## R9. Seed
 - **Decision**: `scripts/seed.ts` (`npm run seed`) creates tables and replaces content inside a transaction (truncate, then insert), so repeated runs leave exactly 5 services / 6 alerts (SC-007). Requires `DATABASE_URL`.
 - **Rationale**: Idempotent without upsert complexity; only touches this project's tables.

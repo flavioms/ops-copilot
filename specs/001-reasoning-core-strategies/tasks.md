@@ -145,6 +145,22 @@ per plan.md "Review Slicing".
 
 ---
 
+---
+
+## Phase 7: Follow-up - JSON database and replanner decisions
+
+**Purpose**: Use `data/seed.json` as the current database and make the replanner choose continue / adjust / finish.
+
+- [X] T045 [PR-9] Write src/store/seed-data.test.ts and src/store/json-file-store.test.ts first (contract suite, persistence across instances, idempotent seed, no write on rejected calls, missing/invalid file), confirm they FAIL
+- [X] T046 [PR-9] Create data/seed.json from the current seed and replace src/store/seed-data.ts with `readSeed()` (zod-validated, fresh copy per call); add `StoreData` to src/store/store.schema.ts
+- [X] T047 [PR-9] Let `MemoryStore` start from given `StoreData` (default: seed) with `snapshot()`; implement src/store/json-file-store.ts (`seed`, `open`, atomic write after each mutation); point SequelizeStore at `readSeed()`
+- [X] T048 [PR-9] Rewrite scripts/seed.ts to rebuild data/db.json (and PostgreSQL only if `DATABASE_URL` is set); arena opens `JsonFileStore` unless `DATABASE_URL` is set; git-ignore data/db.json; run `npm run seed`
+- [X] T049 [PR-10] Update src/agents/plan-and-execute.test.ts first (continue keeps plan, adjust replaces, adjust without steps = continue, finish ends early, adjusted plan capped so total <= 8), confirm FAIL
+- [X] T050 [PR-10] Change `Replan` in src/agents/plan-and-execute.schema.ts to `{action, steps?, rationale, answer?}`, update the replanner in src/agents/plan-and-execute.ts and REPLANNER_PROMPT in src/agents/prompts.ts
+- [X] T051 [PR-11] Test first (src/store/snapshot.test.ts, arena.test.ts: one fresh strategy per selected strategy), then add src/store/snapshot.ts and make the arena build a new `MemoryStore` from one database snapshot per strategy, leaving data/db.json untouched
+
+---
+
 ## Dependencies & Execution Order
 
 - Phase 1 (T001–T003) → Phase 2. PR-1 has no dependency on Setup and can start immediately.
