@@ -1,18 +1,9 @@
-import type { Alert, Service } from "./store.schema.ts";
+import { readFileSync } from "node:fs";
+import { StoreData } from "./store.schema.ts";
 
-export const seedServices: Service[] = [
-  { id: "svc-1", name: "checkout-api" },
-  { id: "svc-2", name: "payments-gateway" },
-  { id: "svc-3", name: "auth-service" },
-  { id: "svc-4", name: "inventory-worker" },
-  { id: "svc-5", name: "notification-service" },
-];
+export const SEED_FILE = new URL("../../data/seed.json", import.meta.url);
 
-export const seedAlerts: Alert[] = [
-  { id: "alt-1", serviceId: "svc-1", title: "High p95 latency on checkout", severity: "high", status: "firing", firedAt: "2026-10-17T02:10:00.000Z" },
-  { id: "alt-2", serviceId: "svc-2", title: "Payment declines spike", severity: "critical", status: "firing", firedAt: "2026-10-17T02:25:00.000Z" },
-  { id: "alt-3", serviceId: "svc-3", title: "Token validation errors", severity: "medium", status: "firing", firedAt: "2026-10-17T02:40:00.000Z" },
-  { id: "alt-4", serviceId: "svc-4", title: "Queue backlog growing", severity: "medium", status: "resolved", firedAt: "2026-10-16T21:00:00.000Z", resolvedAt: "2026-10-16T22:15:00.000Z" },
-  { id: "alt-5", serviceId: "svc-5", title: "Email delivery delay", severity: "low", status: "resolved", firedAt: "2026-10-16T18:30:00.000Z", resolvedAt: "2026-10-16T19:05:00.000Z" },
-  { id: "alt-6", serviceId: "svc-1", title: "Disk pressure on checkout nodes", severity: "high", status: "resolved", firedAt: "2026-10-15T23:00:00.000Z", resolvedAt: "2026-10-16T01:20:00.000Z" },
-];
+/** Reads and validates data/seed.json (5 services, 6 alerts). Each call returns a fresh copy. */
+export function readSeed(): StoreData {
+  return StoreData.parse(JSON.parse(readFileSync(SEED_FILE, "utf8")));
+}

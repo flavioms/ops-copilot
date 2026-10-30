@@ -1,4 +1,4 @@
-import { seedAlerts, seedServices } from "./seed-data.ts";
+import { readSeed } from "./seed-data.ts";
 import { AlreadyResolved, UnknownIncident, UnknownService } from "./store.errors.ts";
 import {
   Incident,
@@ -6,14 +6,28 @@ import {
   type Alert,
   type AlertStatus,
   type Service,
+  type StoreData,
 } from "./store.schema.ts";
 import type { AlertStore } from "./store.types.ts";
 
 export class MemoryStore implements AlertStore {
-  private readonly services: Service[] = structuredClone(seedServices);
-  private readonly alerts: Alert[] = structuredClone(seedAlerts);
-  private readonly incidents: Incident[] = [];
-  private nextIncident = 1;
+  private readonly services: Service[];
+  private readonly alerts: Alert[];
+  private readonly incidents: Incident[];
+  private nextIncident: number;
+
+  /** Starts from the given data (default: the JSON seed). Nothing is written anywhere. */
+  constructor(data: StoreData = readSeed()) {
+    const copy = structuredClone(data);
+    this.services = copy.services;
+    this.alerts = copy.alerts;
+    this.incidents = copy.incidents;
+    this.nextIncident = Math.max(0, ...this.incidents.map((i) => Number(i.id.slice(4)))) + 1;
+  }
+
+  snapshot(): StoreData {
+    return structuredClone({ services: this.services, alerts: this.alerts, incidents: this.incidents });
+  }
 
   async listServices() {
     return structuredClone(this.services);

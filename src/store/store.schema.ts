@@ -50,3 +50,12 @@ export type Service = z.infer<typeof Service>;
 export type Alert = z.infer<typeof Alert>;
 export type Incident = z.infer<typeof Incident>;
 export type OpenIncidentInput = z.infer<typeof OpenIncidentInput>;
+
+/** Whole content of a store: the shape of data/seed.json and of the JSON database file. */
+export const StoreData = z.object({
+  services: z.array(Service),
+  alerts: z.array(Alert),
+  incidents: z.array(Incident),
+});
+
+export type StoreData = z.infer<typeof StoreData>;

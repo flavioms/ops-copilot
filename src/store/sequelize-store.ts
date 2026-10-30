@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import { seedAlerts, seedServices } from "./seed-data.ts";
+import { readSeed } from "./seed-data.ts";
 import { AlertModel, IncidentModel, ServiceModel, defineModels } from "./sequelize-models.ts";
 import { AlreadyResolved, UnknownIncident, UnknownService } from "./store.errors.ts";
 import { Alert, Incident, OpenIncidentInput, Service, type AlertStatus } from "./store.schema.ts";
@@ -26,10 +26,11 @@ export class SequelizeStore implements AlertStore {
 
   /** Drops and recreates the tables (sync does not support transactions), then inserts the seed atomically. */
   async reset() {
+    const seed = readSeed();
     await this.sequelize.sync({ force: true });
     await this.sequelize.transaction(async (transaction) => {
-      await ServiceModel.bulkCreate(seedServices, { transaction });
-      await AlertModel.bulkCreate(seedAlerts, { transaction });
+      await ServiceModel.bulkCreate(seed.services, { transaction });
+      await AlertModel.bulkCreate(seed.alerts, { transaction });
     });
   }
 
